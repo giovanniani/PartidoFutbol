@@ -68,18 +68,26 @@ int main(){
             }
             //match_ball->team = 'A';
             //printf("%c\n", match_ball->team);
-            if(SEMAPHORES){
-                match_ball -> team = 'A';   
-            }
-            /*
+            
             for(int i = 0; i < childs; i++){
-                delay(100);
-                sem_wait(&mutex);
-                printf("\nEntered..\n");
-                printf("%d\n", i);
-                printf("\nJust Exiting...\n");
-                sem_post(&mutex);
-            }*/
+                
+                if(SEMAPHORES){
+                  // sem_wait(mutex);
+                   if(process_id <= parent_process_id + 5)
+                    match_ball -> team = 'A';   
+                    else
+                    match_ball -> team = 'B';   
+                   match_ball -> pID = process_id;
+                   //printf("la bola pertenece a : %d, del equipo %c \n", match_ball->pID, match_ball->team);
+                   printf("i = %d, %d \n", i, process_id);
+                   sleep(1);
+
+                }
+                //sleep(2);
+                //sem_post(mutex);
+
+                
+            }
             return 0;
         }
     }
