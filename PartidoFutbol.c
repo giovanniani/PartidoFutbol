@@ -8,6 +8,8 @@
 #include<time.h>
 #include<semaphore.h>
 
+#define SEMAPHORES 1
+
 void delay(unsigned int mseconds)
 {
     clock_t goal = mseconds + clock();
@@ -17,10 +19,16 @@ void delay(unsigned int mseconds)
 
 //Para intentar usar mmap más abajo para la variable compartido
 //creo que es mejor usar un struct que tenga el char del equipo al que pertenece la bola y un int con el id del proceso que tiene la bola
-static char *ball;
+struct ball
+{
+    int pID;
+    char team;
+} match_ball = {
+    0,
+    'A'
+};
 
 int main(){
-    sem_t mutex;
     int childs = 10;
     int a_team[5];
     int b_team[5];
@@ -29,12 +37,13 @@ int main(){
     int scoreA = 0;
     int scoreB = 0;
    //Aquí se usa mmap. Apenas estuve investigando, todavía no sé como usarlo bien
-    ball = mmap(NULL, sizeof*ball, PROT_READ | PROT_WRITE, MAP_SHARED |MAP_ANONYMOUS, -1, 0);
-    *ball = 'A';
-    //printf("Childs number: ");
-    //scanf("%d", &childs);
+    struct ball* match_ball = mmap(NULL, sizeof(struct ball), PROT_READ | PROT_WRITE, MAP_SHARED |MAP_ANONYMOUS, -1, 0);
+    //Aquí se crea el semáforo de manera compartida
+    sem_t*mutex=mmap(NULL, sizeof(sem_t), PROT_READ | PROT_WRITE,
+                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     int msec = 0, trigger = 10; /* 10ms */
     clock_t before = clock();
+    sem_init(mutex, 1, 1);
     for(int i = 0; i < childs; i++){
         if(fork() == 0){
             int iterations;
@@ -57,7 +66,12 @@ int main(){
                 b_team[((process_id - parent_process_id) % 5) -1] = process_id;
                 printf("Proceso: %d va a equipo B\n", b_team[((process_id - parent_process_id) % 5) -1]);
             }
-
+            //match_ball->team = 'A';
+            //printf("%c\n", match_ball->team);
+            if(SEMAPHORES){
+                match_ball -> team = 'A';   
+            }
+            /*
             for(int i = 0; i < childs; i++){
                 delay(100);
                 sem_wait(&mutex);
@@ -65,7 +79,7 @@ int main(){
                 printf("%d\n", i);
                 printf("\nJust Exiting...\n");
                 sem_post(&mutex);
-            }
+            }*/
             return 0;
         }
     }
@@ -76,5 +90,6 @@ int main(){
 
     }
 
+    munmap(match_ball, sizeof(struct ball));
     return 0;
 }
