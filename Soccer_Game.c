@@ -51,8 +51,8 @@ int main(){
                     MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	int*scoreB = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE,
                     MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-	scoreA = 0;
-	scoreB = 0;
+	*scoreA = 0;
+	*scoreB = 0;
 	//Se crean los recursos compartidos(la bola y las canchas)
     struct ball* match_ball = mmap(NULL, sizeof(struct ball), PROT_READ | PROT_WRITE, MAP_SHARED |MAP_ANONYMOUS, -1, 0);
     struct goal* goal_team_A = mmap(NULL, sizeof(struct goal), PROT_READ | PROT_WRITE, MAP_SHARED |MAP_ANONYMOUS, -1, 0);
@@ -128,19 +128,77 @@ int main(){
     	sem_post(mutex);
 
     	sem_wait(mutex_goal_A);
-    	sem_wait(mutex_goal_B);
-    	sleep(1);
-    	if(getpid() == match_ball -> pID && match_ball->team == 'B'){
-    		printf("Hello\n");
-    		scoreB += 1;
+    	if(match_ball-> pID != getpid() && goal_team_A->pID != getpid()){
+    		goal_team_A -> pID = getpid();
     	}
-    	else if(getpid() == match_ball -> pID && match_ball->team == 'A'){
-    		scoreA += 1;
+    	sleep(1);
+    	printf("El proceso %d tiene la cancha\n", goal_team_A->pID);
+    	sem_post(mutex_goal_A);
+
+    	int cont = 3;
+		sem_wait(mutex_goal_A);
+		while(cont > 0 && goal_team_A->pID != getpid() && match_ball->pID == getpid()){
+			sleep(1);
+			cont--;
+		}
+		sem_post(mutex_goal_A);
+		sem_wait(mutex_goal_A);
+    	if(match_ball->pID == getpid() && goal_team_A -> pID == getpid()){
+    		if(match_ball->team == 'A'){
+    			*scoreA += 1;
+    		}
+    		else if(match_ball->team == 'B'){
+    			*scoreB += 1;
+    		}
+    	}
+    	sleep(1);
+    	printf("Goool!! del equipo %c. Anotado por %d\n", match_ball->team, match_ball->pID);
+    	printf("Marcador- A: %d - B: %d\n", *scoreA, *scoreB);
+    	sem_post(mutex_goal_A);
+
+
+    	/*sem_wait(mutex_goal_A);
+    	if(mutex_goal_A-> getpid){
+    		int cont = 3;
+    		while(cont > 0){
+    			sleep(1);
+
+    		}
+    	}*/
+    	//sem_wait(mutex_goal_A);
+    	//sem_wait(mutex_goal_B);
+    	/*sleep(1);
+    	if(getpid() == match_ball -> pID && match_ball->team == 'B'){
+    		int cont = 3;
+    		while(cont > 0){
+    			if(goal_team_A->pID == getpid() || goal_team_A->pID == 0){
+    				sleep(1);
+    				sem_wait(mutex_goal_A);
+    				goal_team_A->pID = getpid();
+    				break;
+    			}
+    			cont --;
+    		}
+    		sem_post(mutex_goal_A);
+    		//*scoreB = 1;
+    	}
+    	if(getpid() == match_ball -> pID && match_ball->team == 'A'){
+    		int cont = 3;
+    		while(cont > 0){
+    			if(goal_team_B->pID == getpid() || goal_team_B->pID == 0){
+    				sleep(1);
+    				sem_wait(mutex_goal_B);
+    				goal_team_A->pID = getpid();
+    				break;
+    			}
+    			cont --;
+    		}
+    		sem_post(mutex_goal_B);
+    		//*scoreA = 1;
     	}
     	printf("Goool!! del equipo %c. Anotado por %d\n", match_ball->team, match_ball->pID);
-    	printf("Marcador- A: %d - B: %d\n", scoreA, scoreB);
-    	sem_post(mutex_goal_B);
-    	sem_post(mutex_goal_A);
+    	printf("Marcador- A: %d - B: %d\n", *scoreA, *scoreB);*/
+    	//sem_post(mutex_goal_A);
     	exit(0);
     }
 }
