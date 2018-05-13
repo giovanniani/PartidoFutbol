@@ -1,0 +1,40 @@
++ Trabajo en parejas de DOS máximo.
++ Entrega : Lunes 14 de Mayo antes de las 12media noche, se revisa en clase el Martes 15 en el lab
++ Enviar al correo: earias@ic-itcr.ac.cr
++ Usar el subject: 
+		SO - Lab02 - fork - SusNombresCompletos
++ Entregar un reporte en PDF con el mismo nombre del subject, con formato completo: portada, introducción, índice, desarrollo y conclusiones. En el desarrollo de su reporte explique la forma de implementación del programa y documente con ejemplos los resultados obtenidos.
++ En el reporte deben aparecer al menos las salidas de ejecución de 2 partidos, donde se muestre paso a paso el avance del juego y de los resultados finales.
++ Utilice como referencia el código del ejemplo de las Lecturas: Caps. 13 y 14 del libro Beginning Linux Programming 4th Ed. además del código de fork trabajado en clase, correspondiente al código del capítulo 3 del Silberchatz.
++ Todo el laboratorio debe desarrollarse trabajando con el lenguaje C sobre Linux.
+
+
+----------------------------------------------------------------------------
+	Fútbol de Procesos con fork + semaphores 
+----------------------------------------------------------------------------
+
+Implementar un “partido” de fútbol entre procesos. Como en todo partido habrán dos equipos, digamos A y B. Su programa deberá crear a todos los 10 jugadores, para equipos de 5 y 5 respectivamente. Habrá una única bola en juego y dos canchas para anotar, una por cada equipo.
+
+Los jugadores serán procesos creados mediante fork() de su programa original, 5 jugarán como equipo A que desean tomar la bola y anotar en la cancha del equipo B. Los otros 5 procesos jugarán como equipo B que desean tomar la bola y anotar en la cancha del equipo A. 
+
+Como podrá imaginar las canchas A y B, así como la bola, son recursos compartidos. Los mismos deberán estar definidos en su programa ANTES de crear todos los 10 procesos jugadores para que sean visibles a todos los procesos en juego. Dichos recursos compartidos deben ser protegidos para su acceso exclusivo mediante semáforos.
+
+Cada proceso jugará de esta forma : los procesos competirán por obtener simultáneamente los dos recursos necesarios de forma exclusiva mediante semáforos: la bola y la cancha contraria para poder anotar.
+
+Las canchas serán implementadas como un contador inicializado en 0. Cada vez que un jugador contrario logre obtener de forma simultánea la bola y la cancha contraria podrá anotar, incrementando el valor del contador de la cancha contraria.
+
+El tiempo total del partido serán 5 minutos. El cual se debe iniciar al crearse los 10 procesos hijos. El terminar el tiempo de los 5 minutos, el proceso padre detendrá los 10 procesos hijos y reportará el marcador final.
+
+Para poder simular el juego y el tiempo del partido se deberán usar tiempos de espera en todo momento; esto es: cada jugador esperará un tiempo antes de ir a buscar la bola y la cancha contraria, esto será un tiempo aleatorio (random) de entre 5 y 20 segundos. Intentará obtener la bola y luego la cancha contraria, si un jugador tiene la bola y no puede obtener la cancha, el tiempo máximo que podrá tener la bola serán 3 segundos o bien hacer 3 intentos máximos por obtener la cancha; en caso de no obtener la cancha deberá devolver la bola. En este caso el jugador (proceso) volverá a esperar un tiempo random de entre 5 y 20 segundos para poder volver a obtener la bola y luego la cancha contraria.
+
+Durante todo el proceso el programa deberá reportar mediante mensajes al usuario lo que ocurre.
+Deberán aparecer mensajes indicando la creación de los 10 procesos hijos creados, todos del mismo padre, indicando el número de proceso y el PPID, además indicar si el proceso es del equipo A o del B.
+Cada vez que un jugador obtiene la bola aparecerá un mensaje indicándolo, si luego obtiene la cancha se debe indicar también y entonces reportar la anotación, indicando el marcador actual para ambos equipos. Si el jugador toma la bola y luego la debe devolver por que no obtuvo la cancha también aparecerá un mensaje. De esta forma el usuario podrá ver que está ocurriendo en el partido en todo momento. 
+
+Como se indicó el partido finalizará a los 5 minutos de iniciado.
+
+Recuerde que ud solo debe realizar un único programa, donde se inicializa el ambiente, se crean los procesos hijos los cuales todos ejecutarán el mismo código programado para jugar. A los 5 minutos el proceso padre podrá terminar todos los procesos hijos para concluir el partido. Se programa 1 vez, pero su programa ejecutará en 10 procesos concurrentes, además del proceso padre.
+
+
+
+Prof. Esteban Arias M.
