@@ -123,90 +123,39 @@ int main(){
             match_ball->pID = getpid();
             match_ball->team = 'B';
         }
-        
-        printf("proceso actual = %d \n", getpid());
-        printf("bola = %d \n", match_ball->pID);
-        //printf("El proceso %d del equipo %c tiene el balon\n", match_ball->pID, match_ball->team);
-        if('a' == 'a')
-        {
-            printf("tengo la bola perras!!");
-            for (int i = 0; i < 3; ++i)
-            {                
-                sem_wait(mutex_goal_A);
-                if(match_ball->pID == getpid() && goal_team_A -> pID == getpid()){
-                    if(match_ball->team == 'A'){
-                        *scoreA += 1;
-                    }
-                    else if(match_ball->team == 'B'){
-                        *scoreB += 1;
-                    }
-                }
-                sleep(1);
-            }
-            
+        //printf("proceso actual = %d \n", getpid());
+        printf("La bola le pertenece a  = %d del equipo %c\n", match_ball->pID, match_ball->team);
 
-        }
-        //sleep(1);
-        
-        printf("proceso actual = %d \n", getpid());
-        printf("cancha = %d \n", goal_team_A->pID);
-        //printf("El proceso %d tiene la cancha\n", goal_team_A->pID);
-        /*while(cont > 0 && goal_team_A->pID != getpid() && match_ball->pID == getpid()){
+        for(int i = 0; i < 3; ++i){
+            sem_wait(mutex_goal_B);
+            //sem_wait(mutex_goal_B);
+            if(match_ball->team == 'A' && match_ball->pID == getpid()){
+                goal_team_B->pID = getpid();
+            }
+            else if(match_ball->team == 'B' && match_ball->pID == getpid()){
+                goal_team_A->pID = getpid();
+            }
             sleep(1);
-            cont--;
-        }*/
-
-        
-        /*
-        printf("Goool!! del equipo %c. Anotado por %d\n", match_ball->team, match_ball->pID);
-        printf("Marcador- A: %d - B: %d\n", *scoreA, *scoreB);
-        sem_post(mutex_goal_A);
-        sem_post(mutex);
-
-
-        sem_wait(mutex_goal_A);
-        if(mutex_goal_A-> getpid){
-            int cont = 3;
-            while(cont > 0){
-                sleep(1);
-
-            }
-        }*/
-        //sem_wait(mutex_goal_A);
-        //sem_wait(mutex_goal_B);
-        /*sleep(1);*/
-        sem_post(mutex);
-        if(getpid() == match_ball -> pID && match_ball->team == 'B'){
-            int cont = 3;
-            while(cont > 0){
-                if(goal_team_A->pID == getpid() || goal_team_A->pID == 0){
-                    sleep(1);
-                    sem_wait(mutex_goal_A);
-                    goal_team_A->pID = getpid();
-                    break;
-                }
-                cont --;
-            }
-            sem_post(mutex_goal_A);
-            //*scoreB = 1;
-        }
-        if(getpid() == match_ball -> pID && match_ball->team == 'A'){
-            int cont = 3;
-            while(cont > 0){
-                if(goal_team_B->pID == getpid() || goal_team_B->pID == 0){
-                    sleep(1);
-                    sem_wait(mutex_goal_B);
-                    goal_team_A->pID = getpid();
-                    break;
-                }
-                cont --;
-            }
             sem_post(mutex_goal_B);
-            //*scoreA = 1;
+            //sem_post(mutex_goal_B);
         }
-        printf("Goool!! del equipo %c. Anotado por %d\n", match_ball->team, match_ball->pID);
-        printf("Marcador- A: %d - B: %d\n", *scoreA, *scoreB);
-        //sem_post(mutex_goal_A);
+        sem_post(mutex);
+        if(match_ball->team == 'A' && goal_team_B->pID == match_ball->pID){
+            printf("El proceso %d va a rematar a la cancha perteneciente a B\n", match_ball->pID);
+        }
+        else if(match_ball->team == 'B' && goal_team_A->pID == match_ball->pID){
+            printf("El proceso %d va a rematar a la cancha perteneciente a A\n", match_ball->pID);   
+        }
+
+        if(match_ball->team == 'A' && match_ball->pID == goal_team_B->pID ){
+            *scoreA += 1;
+            printf("Gooooool! de %c anotado por %d\n", match_ball->team, match_ball->pID);
+        }
+        else if(match_ball->team == 'B' && match_ball->pID == goal_team_A->pID ){
+            *scoreB += 1;
+            printf("Gooooool! de %c anotado por %d\n", match_ball->team, match_ball->pID);
+        }
+        printf("Marcador: A: %d - B: %d\n",*scoreA, *scoreB);
         exit(0);
     }
 }
