@@ -104,6 +104,7 @@ int main(){
             else{
                 printf("Proceso: %d, hijo de %d, va a equipo B\n", getpid(), getppid());
             }
+            sleep(1);
             break;
         }
     }
@@ -151,9 +152,9 @@ int main(){
         srand((unsigned) time(&t));
         int randomnumber;
         randomnumber = rand() % 21;
-        //printf("Tiempo de espera: %d\n", randomnumber);
-        sleep(randomnumber);
-        //delay((randomnumber*10000));
+        printf("Tiempo de espera: %d\n", randomnumber);
+        //sleep(randomnumber);
+        delay((randomnumber*10000));
         sem_wait(mutex);
         if(getpid() <= getppid() + 5){
             match_ball->pID = getpid();
@@ -163,6 +164,7 @@ int main(){
             match_ball->pID = getpid();
             match_ball->team = 'B';
         }
+        sleep(1);
         //printf("proceso actual = %d \n", getpid());
         printf("La bola le pertenece a  = %d del equipo %c\n", match_ball->pID, match_ball->team);
         for(int i = 0; i < 3; ++i){
@@ -177,6 +179,7 @@ int main(){
             sem_post(mutex_goal_B);
             //sem_post(mutex_goal_B);
         }
+        sleep(1);
         sem_post(mutex);
         if(match_ball->team == 'A' && goal_team_B->pID == match_ball->pID){
             printf("El proceso %d va a rematar a la cancha perteneciente a B\n", match_ball->pID);
@@ -193,6 +196,7 @@ int main(){
         else{
             printf("El proceso %d no pudo anotar\n", match_ball->pID);
         }
+        sleep(5);
         }
         
     }
