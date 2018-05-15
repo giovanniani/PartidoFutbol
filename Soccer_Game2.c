@@ -1,9 +1,19 @@
 /********************************************************************************
+Instituto Tecnológico de Costa Rica
+Principios de Sistemas Operativos
+Profesor: Esteban Arias
+Laboratorio de Forks
+Estudiantes:
+    Myron Camacho Brenes 2013034267
+    Giovanni Villalobos
+
 Códigos de referencia: https://gist.github.com/junfenglx/7412986 Autor: junfenglx
 */
 
-//Para compilar se recomienda hacer gcc Soccer_Game.c -lpthread -o Soccer_Game
-// y para ejecutar ./Soccer_Game
+//Para compilar se recomienda hacer gcc Soccer_Game2.c -lpthread -o Soccer_Game2
+// y para ejecutar ./Soccer_Game2
+
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +25,7 @@ Códigos de referencia: https://gist.github.com/junfenglx/7412986 Autor: junfeng
 #include<time.h>
 #include<semaphore.h>
 #include <errno.h> /* errno, ECHILD            */
+#include <signal.h>
 
 #define SEMAPHORES 1
 
@@ -45,6 +56,9 @@ goal_team_B = {
 
 
 int main(){
+    time_t*start_time = mmap(NULL, sizeof(time_t), PROT_READ | PROT_WRITE,
+                    MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    *start_time = time(NULL);
     int childs = 10;
     pid_t child;
     int*scoreA = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE,
@@ -85,12 +99,11 @@ int main(){
                     process_id es menor que 18003*/
             
             if(getpid() <= getppid() + 5){
-                printf("Proceso: %d va a equipo A\n", getpid());
+                printf("Proceso: %d, hijo de %d, va a equipo A\n", getpid(), getppid());
             }
             else{
-                printf("Proceso: %d va a equipo B\n", getpid());
+                printf("Proceso: %d, hijo de %d, va a equipo B\n", getpid(), getppid());
             }
-            sleep(1);
             break;
         }
     }
@@ -111,9 +124,36 @@ int main(){
         munmap(mutex_goal_A, sizeof(sem_t));
         munmap(mutex_goal_B, sizeof(sem_t));
 
+        munmap(scoreA, sizeof(int));
+        munmap(scoreB, sizeof(int));
+
         return 0;
     }
     else{
+        while(1){
+            if(time(NULL) - *start_time == 300){
+                printf("Juego terminado\n");
+                printf("Marcador final-> A: %d - B: %d\n", *scoreA, *scoreB);
+                munmap(match_ball, sizeof(struct ball));
+                munmap(goal_team_A, sizeof(struct goal));
+                munmap(goal_team_B, sizeof(struct goal));
+
+                munmap(mutex, sizeof(sem_t));
+                munmap(mutex_goal_A, sizeof(sem_t));
+                munmap(mutex_goal_B, sizeof(sem_t));
+
+                munmap(scoreA, sizeof(int));
+                munmap(scoreB, sizeof(int));
+                kill(child, SIGKILL);
+                exit(0);
+            }
+        time_t t;
+        srand((unsigned) time(&t));
+        int randomnumber;
+        randomnumber = rand() % 21;
+        //printf("Tiempo de espera: %d\n", randomnumber);
+        sleep(randomnumber);
+        //delay((randomnumber*10000));
         sem_wait(mutex);
         if(getpid() <= getppid() + 5){
             match_ball->pID = getpid();
@@ -125,7 +165,6 @@ int main(){
         }
         //printf("proceso actual = %d \n", getpid());
         printf("La bola le pertenece a  = %d del equipo %c\n", match_ball->pID, match_ball->team);
-
         for(int i = 0; i < 3; ++i){
             sem_wait(mutex_goal_B);
             //sem_wait(mutex_goal_B);
@@ -135,27 +174,26 @@ int main(){
             else if(match_ball->team == 'B' && match_ball->pID == getpid()){
                 goal_team_A->pID = getpid();
             }
-            sleep(1);
             sem_post(mutex_goal_B);
             //sem_post(mutex_goal_B);
         }
         sem_post(mutex);
         if(match_ball->team == 'A' && goal_team_B->pID == match_ball->pID){
             printf("El proceso %d va a rematar a la cancha perteneciente a B\n", match_ball->pID);
+            *scoreA += 1;
+            printf("Gooooool! de %c anotado por %d\n", match_ball->team, match_ball->pID);
+            printf("Marcador: A: %d - B: %d\n",*scoreA, *scoreB);
         }
         else if(match_ball->team == 'B' && goal_team_A->pID == match_ball->pID){
             printf("El proceso %d va a rematar a la cancha perteneciente a A\n", match_ball->pID);   
-        }
-
-        if(match_ball->team == 'A' && match_ball->pID == goal_team_B->pID ){
-            *scoreA += 1;
-            printf("Gooooool! de %c anotado por %d\n", match_ball->team, match_ball->pID);
-        }
-        else if(match_ball->team == 'B' && match_ball->pID == goal_team_A->pID ){
             *scoreB += 1;
             printf("Gooooool! de %c anotado por %d\n", match_ball->team, match_ball->pID);
+            printf("Marcador: A: %d - B: %d\n",*scoreA, *scoreB);
         }
-        printf("Marcador: A: %d - B: %d\n",*scoreA, *scoreB);
-        exit(0);
+        else{
+            printf("El proceso %d no pudo anotar\n", match_ball->pID);
+        }
+        }
+        
     }
 }
